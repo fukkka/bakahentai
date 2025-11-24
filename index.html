@@ -8,13 +8,14 @@
         * {
             margin: 0;
             padding: 0;
-            overflow: hidden;
         }
         
         body {
             animation: bgFlash 0.5s infinite;
             font-family: "Microsoft YaHei", "黑体", Arial;
             position: relative;
+            height: 100vh;
+            overflow: hidden;
         }
         
         @keyframes bgFlash {
@@ -31,10 +32,11 @@
             transform: translate(-50%, -50%);
             text-align: center;
             z-index: 10;
+            width: 90%;
         }
         
         h1 {
-            font-size: 80px;
+            font-size: clamp(40px, 8vw, 80px);
             color: #fff;
             text-shadow: 
                 0 0 10px #ff0000,
@@ -79,23 +81,14 @@
             width: 5px;
             height: 5px;
             border-radius: 50%;
-            animation: explode 1s ease-out infinite;
-        }
-        
-        @keyframes explode {
-            0% {
-                transform: translate(0, 0);
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
+            pointer-events: none;
         }
         
         .star {
             position: absolute;
             font-size: 50px;
             animation: rotate 3s linear infinite, float 2s ease-in-out infinite;
+            pointer-events: none;
         }
         
         @keyframes rotate {
@@ -111,7 +104,8 @@
         .heart {
             position: absolute;
             font-size: 40px;
-            animation: heartbeat 0.5s infinite, fall 5s linear infinite;
+            animation: heartbeat 0.5s infinite;
+            pointer-events: none;
         }
         
         @keyframes heartbeat {
@@ -119,17 +113,40 @@
             50% { transform: scale(1.3); }
         }
         
-        @keyframes fall {
-            0% { top: -50px; }
-            100% { top: 100%; }
+        .sparkle {
+            position: absolute;
+            font-size: 30px;
+            animation: sparkle 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+        
+        .music-note {
+            position: fixed;
+            font-size: 30px;
+            animation: musicFloat 3s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes musicFloat {
+            0% { 
+                bottom: -50px; 
+                opacity: 1;
+                transform: translateX(0) rotate(0deg);
+            }
+            100% { 
+                bottom: 110vh; 
+                opacity: 0;
+                transform: translateX(50px) rotate(360deg);
+            }
         }
     </style>
 </head>
 <body>
-    <audio autoplay loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-    </audio>
-    
     <div class="container">
         <h1>🌸小咪祝您早上好！🌸</h1>
     </div>
@@ -137,7 +154,7 @@
     <script>
         // 创建烟火效果
         function createFirework() {
-            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff'];
             const x = Math.random() * window.innerWidth;
             const y = Math.random() * window.innerHeight;
             
@@ -147,33 +164,26 @@
                 firework.style.left = x + 'px';
                 firework.style.top = y + 'px';
                 firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                firework.style.boxShadow = `0 0 10px ${colors[Math.floor(Math.random() * colors.length)]}`;
                 
                 const angle = (Math.PI * 2 * i) / 30;
                 const velocity = 50 + Math.random() * 100;
-                const tx = Math.cos(angle) * velocity;
-                const ty = Math.sin(angle) * velocity;
-                
-                firework.style.animation = `explode ${0.5 + Math.random()}s ease-out forwards`;
-                firework.style.setProperty('--tx', tx + 'px');
-                firework.style.setProperty('--ty', ty + 'px');
-                
-                const style = document.createElement('style');
-                style.textContent = `
-                    @keyframes explode {
-                        to {
-                            transform: translate(${tx}px, ${ty}px);
-                            opacity: 0;
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
+                const duration = 0.5 + Math.random() * 0.5;
                 
                 document.body.appendChild(firework);
                 
-                setTimeout(() => {
-                    firework.remove();
-                    style.remove();
-                }, 1500);
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+                
+                firework.animate([
+                    { transform: 'translate(0, 0)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px)`, opacity: 0 }
+                ], {
+                    duration: duration * 1000,
+                    easing: 'ease-out'
+                });
+                
+                setTimeout(() => firework.remove(), duration * 1000);
             }
         }
         
@@ -182,8 +192,8 @@
             const star = document.createElement('div');
             star.className = 'star';
             star.textContent = '⭐';
-            star.style.left = Math.random() * window.innerWidth + 'px';
-            star.style.top = Math.random() * window.innerHeight + 'px';
+            star.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+            star.style.top = Math.random() * (window.innerHeight - 50) + 'px';
             document.body.appendChild(star);
             
             setTimeout(() => star.remove(), 6000);
@@ -194,24 +204,59 @@
             const heart = document.createElement('div');
             heart.className = 'heart';
             heart.textContent = '❤️';
-            heart.style.left = Math.random() * window.innerWidth + 'px';
-            heart.style.top = '-50px';
+            heart.style.left = Math.random() * (window.innerWidth - 40) + 'px';
+            heart.style.top = Math.random() * (window.innerHeight - 40) + 'px';
             document.body.appendChild(heart);
             
             setTimeout(() => heart.remove(), 5000);
         }
         
-        // 定时创建特效
-        setInterval(createFirework, 800);
-        setInterval(createStar, 500);
-        setInterval(createHeart, 600);
-        
-        // 初始特效
-        for (let i = 0; i < 5; i++) {
-            setTimeout(createFirework, i * 200);
-            setTimeout(createStar, i * 150);
-            setTimeout(createHeart, i * 180);
+        // 创建闪光效果
+        function createSparkle() {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.textContent = '✨';
+            sparkle.style.left = Math.random() * (window.innerWidth - 30) + 'px';
+            sparkle.style.top = Math.random() * (window.innerHeight - 30) + 'px';
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 2000);
         }
+        
+        // 创建音符效果
+        function createMusicNote() {
+            const notes = ['🎵', '🎶', '🎸', '🎤', '🎧'];
+            const note = document.createElement('div');
+            note.className = 'music-note';
+            note.textContent = notes[Math.floor(Math.random() * notes.length)];
+            note.style.left = Math.random() * window.innerWidth + 'px';
+            document.body.appendChild(note);
+            
+            setTimeout(() => note.remove(), 3000);
+        }
+        
+        // 定时创建特效
+        setInterval(createFirework, 600);
+        setInterval(createStar, 400);
+        setInterval(createHeart, 500);
+        setInterval(createSparkle, 300);
+        setInterval(createMusicNote, 700);
+        
+        // 初始特效爆发
+        for (let i = 0; i < 10; i++) {
+            setTimeout(createFirework, i * 100);
+            setTimeout(createStar, i * 120);
+            setTimeout(createHeart, i * 150);
+            setTimeout(createSparkle, i * 80);
+            setTimeout(createMusicNote, i * 200);
+        }
+        
+        // 点击屏幕也会产生烟火
+        document.body.addEventListener('click', function(e) {
+            for (let i = 0; i < 3; i++) {
+                setTimeout(createFirework, i * 100);
+            }
+        });
     </script>
 </body>
 </html>
